@@ -19,7 +19,7 @@
         PHISH<span class="logo-accent">SCAN</span>
         <span class="logo-bracket">]</span>
       </span>
-      <span class="header-tag">v1.0 · rule-based engine</span>
+      <span class="header-tag">v1.1 · rule-based + WHOIS</span>
     </div>
   </header>
 
@@ -27,7 +27,7 @@
     <section class="hero">
       <p class="hero-label">// threat analysis system</p>
       <h1>Analyze a URL for<br><span class="accent">phishing signals.</span></h1>
-      <p class="hero-sub">Rule-based scoring across 8 security heuristics. No data sent to third parties.</p>
+      <p class="hero-sub">8 security heuristics + live WHOIS domain intelligence. No data sent to third parties.</p>
     </section>
 
     <section class="input-section">
@@ -54,7 +54,7 @@
     <section class="result-section" id="result-section" aria-live="polite">
       <!-- scan bar -->
       <div class="scan-bar-wrap" id="scan-bar-wrap">
-        <div class="scan-label">scanning<span class="dots"></span></div>
+        <div class="scan-label" id="scan-label">scanning<span class="dots"></span></div>
         <div class="scan-bar"><div class="scan-fill" id="scan-fill"></div></div>
       </div>
 
@@ -66,11 +66,19 @@
             <span class="verdict-text" id="verdict-text"></span>
           </div>
           <div class="result-score">
-            score: <span id="score-value"></span> / 14+
+            score: <span id="score-value"></span> / 17+
           </div>
         </div>
 
         <div class="result-url" id="result-url"></div>
+
+        <!-- WHOIS panel -->
+        <div class="whois-panel" id="whois-panel">
+          <p class="whois-label">// domain intelligence</p>
+          <div class="whois-grid" id="whois-grid"></div>
+        </div>
+
+        <div class="whois-error" id="whois-error"></div>
 
         <div class="flags-section" id="flags-section">
           <p class="flags-label">// triggered signals</p>
@@ -94,13 +102,14 @@
         <div class="rule"><span class="rule-score">+1–3</span><span class="rule-name">Suspicious keywords</span></div>
         <div class="rule"><span class="rule-score">+1</span><span class="rule-name">Hyphen-heavy domain</span></div>
         <div class="rule"><span class="rule-score">+1</span><span class="rule-name">Long URL (&gt;75 chars)</span></div>
+        <div class="rule rule-new"><span class="rule-score">+1–3</span><span class="rule-name">New domain (WHOIS age)</span></div>
       </div>
     </section>
   </main>
 
   <footer>
-    <span>built with Python · Flask · tldextract</span>
-    <span>MVP — ML expansion coming soon</span>
+    <span>built with Python · Flask · tldextract · python-whois</span>
+    <span>MVP — VirusTotal + ML coming soon</span>
   </footer>
 
   <script src="/static/script.js"></script>

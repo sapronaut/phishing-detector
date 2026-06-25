@@ -298,3 +298,50 @@ footer {
   header, footer { padding-left: 20px; padding-right: 20px; }
   .result-header { flex-direction: column; align-items: flex-start; gap: 6px; }
 }
+
+/* ── WHOIS panel ── */
+.whois-panel {
+  padding: 14px 20px 2px;
+  border-bottom: 1px solid var(--border);
+  display: none;
+}
+.whois-label {
+  font-size: 11px;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+.whois-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+.whois-row {
+  display: flex;
+  gap: 12px;
+  font-size: 12px;
+}
+.whois-key {
+  color: var(--muted);
+  min-width: 80px;
+  flex-shrink: 0;
+}
+.whois-val {
+  color: var(--text);
+  word-break: break-all;
+}
+.whois-error {
+  padding: 10px 20px;
+  font-size: 11px;
+  color: var(--muted);
+  border-bottom: 1px solid var(--border);
+  display: none;
+}
+
+/* new WHOIS rule highlight */
+.rule-new {
+  border-color: var(--accent);
+}
+.rule-new .rule-name {
+  color: var(--accent);
+}

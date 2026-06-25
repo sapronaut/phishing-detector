@@ -1,5 +1,6 @@
 import re
 import tldextract
+from whois_lookup import get_domain_info
 
 SUSPICIOUS_KEYWORDS = [
     "login", "verify", "update", "secure", "account",
@@ -35,6 +36,7 @@ def analyze_url(url: str) -> dict:
         flags.append(("Contains @ symbol (can redirect to attacker)", 3))
 
     # 4. Excessive subdomains (too many dots in host)
+    extracted = None
     try:
         extracted = tldextract.extract(url)
         subdomain = extracted.subdomain
@@ -49,7 +51,7 @@ def analyze_url(url: str) -> dict:
     url_lower = url.lower()
     found_keywords = [kw for kw in SUSPICIOUS_KEYWORDS if kw in url_lower]
     if found_keywords:
-        score += min(len(found_keywords), 3)  # cap at +3
+        score += min(len(found_keywords), 3)
         flags.append((f"Suspicious keywords: {', '.join(found_keywords)}", len(found_keywords)))
 
     # 6. Long URL
@@ -57,7 +59,7 @@ def analyze_url(url: str) -> dict:
         score += 1
         flags.append((f"Long URL ({len(url)} chars)", 1))
 
-    # 7. Hyphen abuse in domain (e.g. paypal-security-login.com)
+    # 7. Hyphen abuse in domain
     try:
         domain = extracted.domain
         if domain.count("-") >= 2:
@@ -72,6 +74,15 @@ def analyze_url(url: str) -> dict:
         score += 2
         flags.append(("Digit substitution detected (e.g. paypa1)", 2))
 
+    # 9. WHOIS lookup
+    is_ip = bool(IP_PATTERN.match(url))
+    whois_data = {}
+    if not is_ip:
+        whois_data = get_domain_info(url)
+        if whois_data.get("age_flag"):
+            score += whois_data["score_delta"]
+            flags.append((whois_data["age_flag"], whois_data["score_delta"]))
+
     # Verdict
     if score <= 2:
         verdict = "legitimate"
@@ -81,8 +92,9 @@ def analyze_url(url: str) -> dict:
         verdict = "phishing"
 
     return {
-        "url": url,
-        "score": score,
+        "url":     url,
+        "score":   score,
         "verdict": verdict,
-        "flags": flags,
+        "flags":   flags,
+        "whois":   whois_data,
     }

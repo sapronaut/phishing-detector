@@ -1,6 +1,7 @@
 const input    = document.getElementById("url-input");
 const btn      = document.getElementById("scan-btn");
 const barWrap  = document.getElementById("scan-bar-wrap");
+const scanLbl  = document.getElementById("scan-label");
 const fill     = document.getElementById("scan-fill");
 const card     = document.getElementById("result-card");
 const icon     = document.getElementById("verdict-icon");
@@ -10,6 +11,9 @@ const urlEl    = document.getElementById("result-url");
 const flagsEl  = document.getElementById("flags-list");
 const flagsSec = document.getElementById("flags-section");
 const noFlags  = document.getElementById("no-flags");
+const whoisPanel = document.getElementById("whois-panel");
+const whoisGrid  = document.getElementById("whois-grid");
+const whoisErr   = document.getElementById("whois-error");
 
 input.addEventListener("keydown", e => {
   if (e.key === "Enter") scan();
@@ -31,9 +35,13 @@ async function scan() {
   fill.style.width = "0%";
   btn.disabled = true;
 
-  // animate bar
-  setTimeout(() => fill.style.width = "60%", 50);
-  setTimeout(() => fill.style.width = "85%", 400);
+  // two-phase animation: heuristics then WHOIS
+  scanLbl.innerHTML = 'scanning heuristics<span class="dots"></span>';
+  setTimeout(() => fill.style.width = "45%", 50);
+  setTimeout(() => {
+    scanLbl.innerHTML = 'querying WHOIS<span class="dots"></span>';
+    fill.style.width = "75%";
+  }, 700);
 
   try {
     const res  = await fetch("/analyze", {
@@ -43,13 +51,13 @@ async function scan() {
     });
     const data = await res.json();
 
-    setTimeout(() => fill.style.width = "100%", 200);
+    fill.style.width = "100%";
 
     setTimeout(() => {
       barWrap.classList.remove("active");
       fill.style.width = "0%";
       renderResult(data);
-    }, 600);
+    }, 400);
 
   } catch (err) {
     barWrap.classList.remove("active");
@@ -62,13 +70,40 @@ function renderResult(data) {
   const icons = { legitimate: "✅", suspicious: "⚠️", phishing: "🚨" };
 
   card.classList.add("visible", data.verdict);
-  icon.textContent   = icons[data.verdict] ?? "?";
-  vtext.textContent  = data.verdict;
+  icon.textContent    = icons[data.verdict] ?? "?";
+  vtext.textContent   = data.verdict;
   scoreEl.textContent = data.score;
-  urlEl.textContent  = data.url;
+  urlEl.textContent   = data.url;
 
+  // WHOIS panel
+  whoisGrid.innerHTML = "";
+  whoisErr.textContent = "";
+  whoisPanel.style.display = "none";
+  whoisErr.style.display   = "none";
+
+  const w = data.whois;
+  if (w && !w.error) {
+    whoisPanel.style.display = "block";
+    const fields = [
+      ["domain",      w.domain],
+      ["age",         w.age_str],
+      ["registered",  w.creation_date],
+      ["expires",     w.expiration_date],
+      ["registrar",   w.registrar],
+    ];
+    fields.forEach(([label, value]) => {
+      const row = document.createElement("div");
+      row.className = "whois-row";
+      row.innerHTML = `<span class="whois-key">${label}</span><span class="whois-val">${value ?? "—"}</span>`;
+      whoisGrid.appendChild(row);
+    });
+  } else if (w && w.error) {
+    whoisErr.style.display = "block";
+    whoisErr.textContent = `// WHOIS unavailable: ${w.error}`;
+  }
+
+  // flags
   flagsEl.innerHTML = "";
-
   if (data.flags && data.flags.length > 0) {
     flagsSec.style.display = "block";
     noFlags.style.display  = "none";
