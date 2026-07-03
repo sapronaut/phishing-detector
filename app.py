@@ -1,7 +1,10 @@
 from flask import Flask, render_template, request, jsonify
 from detector import analyze_url
+from db import init_db, save_scan, get_history
 
 app = Flask(__name__)
+
+init_db()
 
 
 @app.route("/")
@@ -22,7 +25,19 @@ def analyze():
         url = "http://" + url
 
     result = analyze_url(url)
+
+    save_scan(
+        url,
+        result["verdict"],
+        result["score"]
+    )
+
     return jsonify(result)
+
+
+@app.route("/history")
+def history():
+    return jsonify(get_history())
 
 
 if __name__ == "__main__":
