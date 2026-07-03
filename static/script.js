@@ -66,6 +66,34 @@ async function scan() {
   }
 }
 
+async function loadHistory() {
+
+    const response = await fetch("/history");
+
+    const history = await response.json();
+
+    const container = document.getElementById("history");
+
+    container.innerHTML = "";
+
+    history.forEach(scan => {
+
+        container.innerHTML += `
+            <div class="history-item">
+
+                <span>${scan.url}</span>
+
+                <span>${scan.verdict}</span>
+
+                <span>Score ${scan.score}</span>
+
+            </div>
+        `;
+
+    });
+
+}
+
 function renderResult(data) {
   const icons = { legitimate: "✅", suspicious: "⚠️", phishing: "🚨" };
 
